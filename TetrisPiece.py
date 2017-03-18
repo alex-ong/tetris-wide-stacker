@@ -47,34 +47,51 @@ S_OFFSETS = (S_NEUTRAL, S_VERT)
 J_OFFSETS = (J_NEUTRAL, J_REVERSE, J_LEFT, J_RIGHT)
 L_OFFSETS = (L_NEUTRAL, L_REVERSE, L_LEFT, L_RIGHT)
 
+def getBag():
+    pieces = (OPiece(), IPiece(), TPiece(), SPiece(), ZPiece(), JPiece(), LPiece())
+    return pieces
+
 class TetrisPiece(object):
     def __init__(self, offsets, typeString):
-        self.offsets = offsets  # array of offset arrays
+        self.offsets = offsets  # array of offset arrays, stored in (y,x) format
         self.typeString = typeString
-        self.topLeftCorner = [0, 0]
-    
+        self.topLeftCorner = [0, 0]  # stored in y, x
+        self.currentOrientation = None
+        
+    def SetPosition(self, x, y):
+        self.topLeftCorner = [y, x]
+        
+    def SetCurrentOrientation(self, index):
+        self.currentOrientation = self.offsets[index]
+        
+    def copy(self):
+        result = TetrisPiece(self.offsets,self.typeString)
+        result.topLeftCorner = self.topLeftCorner
+        result.currentOrientation = self.currentOrientation
+        return result
+        
 class OPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(O_OFFSETS,'O')
+        super().__init__(O_OFFSETS, 'O')
 
 class IPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(I_OFFSETS,'I')
+        super().__init__(I_OFFSETS, 'I')
 class TPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(T_OFFSETS,'T')
+        super().__init__(T_OFFSETS, 'T')
 class SPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(S_OFFSETS,'S')
+        super().__init__(S_OFFSETS, 'S')
 class ZPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(Z_OFFSETS,'Z')
+        super().__init__(Z_OFFSETS, 'Z')
 class JPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(J_OFFSETS,'J')
+        super().__init__(J_OFFSETS, 'J')
 class LPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(L_OFFSETS,'L')
+        super().__init__(L_OFFSETS, 'L')
         
 def prettyPrintPiece(offsetArray, typeString):    
     array = [[' ' for _ in range(4)] for _ in range(4)]    
@@ -86,7 +103,7 @@ def prettyPrintPiece(offsetArray, typeString):
         print(row)
         
 if __name__ == '__main__':
-    pieces = (OPiece(),IPiece(),TPiece(),SPiece(),ZPiece(),JPiece(),LPiece())
+    
     for piece in pieces:
         for offset in piece.offsets:
             prettyPrintPiece(offset, piece.typeString)
