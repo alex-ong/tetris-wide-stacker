@@ -14,6 +14,7 @@ class PerfectFit(Enum):
     CONTINUE = 2
 
 EMPTY = '.'
+LIMIT = 'X'
 class TetrisField(object):
     def __init__(self, width=0, height=0):
         self.data = [[EMPTY for _ in range(width)] for _ in range(height)]
@@ -21,16 +22,16 @@ class TetrisField(object):
         self.height = height
         
     def copy(self):
-        result = TetrisField() #create empty field       
+        result = TetrisField()  # create empty field       
         result.data = [row[:] for row in self.data]
-        result.width = self.width #post-set width/height
+        result.width = self.width  # post-set width/height
         result.height = self.height
         
         return result
     
     def findDrop(self, piece):
-        #modifies the piece's position by only changing y value.
-        #returns null if dropping it creates a gap. (e.g. s/z in neutral on the floor)
+        # modifies the piece's position by only changing y value.
+        # returns null if dropping it creates a gap. (e.g. s/z in neutral on the floor)
         currentResult = self.isPerfectFit(piece)
         while (currentResult == PerfectFit.CONTINUE):
             piece.topLeftCorner[0] += 1
@@ -42,34 +43,64 @@ class TetrisField(object):
     
     # returns if the current piece placement is happy
     def isPerfectFit(self, piece):        
-        #first, check if we collide.
+        # first, check if we collide.
         finalPositions = []
         piecePosition = piece.topLeftCorner
                 
         for offset in piece.currentOrientation:
             finalY = offset[0] + piece.topLeftCorner[0]
             finalX = offset[1] + piece.topLeftCorner[1]
-            finalPositions.append((finalY,finalX))
+            finalPositions.append((finalY, finalX))
         
         if self.collides(finalPositions):
             return PerfectFit.EXIT
         else:
-            #place the piece then check under the piece to make sure it conforms perfectly
+            # place the piece then check under the piece to make sure it conforms perfectly
             self.placePiece(piece)
             allCellsHappy = True
             for position in finalPositions:
-                positionBelow = (position[0]+1, position[1])                                
-                if not (positionBelow[0] >= self.height or #check for out of bounds
-                    self.data[positionBelow[0]][positionBelow[1]] != '.' and #we don't want empty
-                    (positionBelow in finalPositions or self.data[positionBelow[0]][positionBelow[1]] != piece.typeString)) : #check for same
-                    allCellsHappy = False
-                    break
+                positionBelow = (position[0] + 1, position[1])          
+                positionLeft = (position[0], position[1] - 1)
+                positionRight = (position[0], position[1] + 1)
+                
+                # place values of cells into variables...
+                cellDown = self.getCellValue(positionBelow[0], positionBelow[1])
+                cellLeft = self.getCellValue(positionLeft[0], positionLeft[1])
+                cellRight = self.getCellValue(positionRight[0], positionRight[1]) 
+                
+                # (position, cellVal, cellCanBeEmpty)
+                comparisons = ((positionBelow, cellDown, False), (positionLeft, cellLeft, True), (positionRight, cellRight, True))
+                
+                for comparison in comparisons:
+                    (pos, cellVal, emptyOK) = comparison
+                    if pos in finalPositions:  # ok
+                        continue
+                    elif cellVal == LIMIT:  # ok
+                        continue
+                    elif cellVal == piece.typeString:
+                        allCellsHappy = False
+                        break
+                    elif (cellVal == EMPTY and not emptyOK):
+                        allCellsHappy = False
+                        break 
+
             self.unplacePiece(piece)
             if allCellsHappy:
                 return PerfectFit.PERFECT
             else:
                 return PerfectFit.CONTINUE
-                  
+    
+    # safe get cell value. returns LIMIT if outside bounds
+    def getCellValue(self, y, x):
+        try:
+            result = self.data[y][x]
+        except IndexError:
+            result = LIMIT
+        return result
+    
+    def cellHappy(self, typeString1, typeString2):
+        return typeString1 != typeString2
+            
     # returns true if any of the positions given collide with the matrix        
     def collides(self, positions):    
         for position in positions:
@@ -114,7 +145,7 @@ if __name__ == '__main__':
         for i in range(len(piece.offsets)):
             piece.SetCurrentOrientation(i)
             for j in range(fieldWidth):
-                piece.SetPosition(j,0)
+                piece.SetPosition(j, 0)
                 result = field.findDrop(piece)
                 if result is not None:
                     field.placePiece(result)

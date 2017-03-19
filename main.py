@@ -16,7 +16,7 @@ class LayoutCreator(object):
     def getPiece(self):        
         result = self.nextPieces.pop(0)
         
-        while isinstance(result, ShuffleMarker): #fix for endless loop
+        while isinstance(result, ShuffleMarker):  # fix for endless loop
             self.refillBag()
             result = self.nextPieces.pop(0)
         
@@ -30,7 +30,7 @@ class LayoutCreator(object):
         self.nextPieces.append(ShuffleMarker())
         
     def createLayout(self):        
-        numPieces = int(self.field.width*self.field.height/4/2) #only fill half high
+        numPieces = int(self.field.width * self.field.height / 4 / 2)  # only fill half high
         piecesPlaced = 0
         while piecesPlaced < numPieces:        
             piece = self.getPiece()            
@@ -42,15 +42,14 @@ class LayoutCreator(object):
                 self.field.placePiece(finalPlacement)
                 self.onPlacePiece()
                 piecesPlaced += 1    
-            else: #no placements, put the piece back into end of queue                
-                self.returnPiece(piece)
-            
+            else:  # no placements, put the piece back into end of queue                
+                self.returnPiece(piece)           
             
 def printField(field):
     print(field)
     print('\n')
     
 if __name__ == '__main__':
-    field = TetrisField.TetrisField(100,15)
-    layout = LayoutCreator(field,lambda: printField(field))
+    field = TetrisField.TetrisField(100, 15)
+    layout = LayoutCreator(field, lambda: printField(field))
     layout.createLayout()
