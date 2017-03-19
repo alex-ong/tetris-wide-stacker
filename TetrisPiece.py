@@ -69,11 +69,16 @@ class TetrisPiece(object):
         result.topLeftCorner = self.topLeftCorner
         result.currentOrientation = self.currentOrientation
         return result
-        
+    
+    def __str__(self):
+        return (self.typeString +":"+ 
+                str(self.topLeftCorner) + "/" +
+                str(self.currentOrientation))
+    
 class OPiece(TetrisPiece):
     def __init__(self):
         super().__init__(O_OFFSETS, 'O')
-
+        
 class IPiece(TetrisPiece):
     def __init__(self):
         super().__init__(I_OFFSETS, 'I')
