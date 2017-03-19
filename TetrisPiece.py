@@ -103,7 +103,7 @@ def prettyPrintPiece(offsetArray, typeString):
         print(row)
         
 if __name__ == '__main__':
-    
+    pieces = getBag()
     for piece in pieces:
         for offset in piece.offsets:
             prettyPrintPiece(offset, piece.typeString)
