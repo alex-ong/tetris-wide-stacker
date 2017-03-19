@@ -48,7 +48,14 @@ J_OFFSETS = (J_NEUTRAL, J_REVERSE, J_LEFT, J_RIGHT)
 L_OFFSETS = (L_NEUTRAL, L_REVERSE, L_LEFT, L_RIGHT)
 
 def getBag():
-    pieces = (OPiece(), IPiece(), TPiece(), SPiece(), ZPiece(), JPiece(), LPiece())
+    pieces = [OPiece(), IPiece(), TPiece(), SPiece(), ZPiece(), JPiece(), LPiece()]
+    return pieces
+
+import random
+
+def getRandomBag():
+    pieces = getBag()
+    random.shuffle(pieces)
     return pieces
 
 class TetrisPiece(object):

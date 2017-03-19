@@ -1,8 +1,18 @@
 '''
-Basic wrapper around Field that can be fed pieces to evaluate
+Basic wrapper around Field that can be fed pieces to listValidPlacements
 '''
 
-def evaluate(field, piece):
+def evaluate(validPlacements):    
+    maxPlacement = None
+    for placement in validPlacements:
+        if maxPlacement is None:
+            maxPlacement = placement
+        elif placement.topLeftCorner[0] > maxPlacement.topLeftCorner[0]:
+            maxPlacement = placement
+
+    return maxPlacement
+
+def listValidPlacements(field, piece):
     results = []        
     for i in range(len(piece.offsets)):
         results.extend(evaluateOrientation(field, piece, i))        
@@ -29,6 +39,7 @@ if __name__ == '__main__':
     import TetrisField, TetrisPiece
     field = TetrisField.TetrisField(20, 8)
     piece = TetrisPiece.IPiece()
-    results = evaluate(field, piece)
-    for result in results:
-        print (result)
+    results = listValidPlacements(field, piece)
+    finalPlacement = evaluate(results)
+    field.placePiece(finalPlacement)
+    print(field)
