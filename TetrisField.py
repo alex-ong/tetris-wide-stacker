@@ -21,6 +21,24 @@ class TetrisField(object):
         self.width = width
         self.height = height
         
+    
+    #TODO: store column heights so we don't have to recalc.    
+    def getColumnHeight(self, columnIndex):
+        height = 0
+        for y in range(self.height):
+            if self.data[y][columnIndex] == EMPTY:
+                return height
+            else:
+                height += 1
+        return height
+    
+    def getColumnHeights(self, startIndex, endIndex):
+        # get column heights, endIndex inclusive
+        results = []
+        for index in range(startIndex,endIndex+1):
+            results.append(self.getColumnHeight(index))
+        return results
+    
     def copy(self):
         result = TetrisField()  # create empty field       
         result.data = [row[:] for row in self.data]

@@ -50,6 +50,6 @@ def printField(field):
     print('\n')
     
 if __name__ == '__main__':
-    field = TetrisField.TetrisField(100, 15)
+    field = TetrisField.TetrisField(150, 15)
     layout = LayoutCreator(field, lambda: printField(field))
     layout.createLayout()
