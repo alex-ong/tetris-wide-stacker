@@ -36,10 +36,10 @@ class LayoutCreator(object):
             piece = self.getPiece()            
             
             validPlacements = FieldEvaluator.listValidPlacements(self.field, piece)
-            finalPlacement = FieldEvaluator.evaluate(validPlacements)
+            finalPlacements = FieldEvaluator.evaluate(self.field, validPlacements)
             
-            if finalPlacement is not None:                
-                self.field.placePiece(finalPlacement)
+            if len(finalPlacements) > 0:                
+                self.field.placePiece(finalPlacements[0][1])  # choose first one for now
                 self.onPlacePiece()
                 piecesPlaced += 1    
             else:  # no placements, put the piece back into end of queue                

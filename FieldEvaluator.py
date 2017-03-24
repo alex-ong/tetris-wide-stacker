@@ -2,32 +2,47 @@
 Basic wrapper around Field that can be fed pieces to listValidPlacements
 '''
 
-def evaluate(validPlacements):    
-    maxPlacement = None
-    for placement in validPlacements:
-        if maxPlacement is None:
-            maxPlacement = placement
-        elif placement.topLeftCorner[0] > maxPlacement.topLeftCorner[0]:
-            maxPlacement = placement
+def evaluate(field, validPlacements):
+    scoreTuples = []
+    for validPlacement in validPlacements:
+        score = evaluate_single(field, validPlacement)
+        scoreTuples.append((score, validPlacement))
+            
+    scoreTuples.sort(key=lambda tup:tup[0])
+    
+    return scoreTuples
 
-    return maxPlacement
+def evaluate_single(field, placement):
+    # do the placement.
+    
+    # do each test and add results    
+    score = -placement.topLeftCorner[0]  # stub for now
+    
+    # return sum of scores
+    return score
+
+# todo
+def evaluate_completed_lines(field, xRange):
+    pass
+def evaluate_bumpiness(field, xRange):
+    pass
 
 def listValidPlacements(field, piece):
     results = []        
     for i in range(len(piece.offsets)):
-        results.extend(evaluateOrientation(field, piece, i))        
+        results.extend(generateOrientation(field, piece, i))        
     return results
     
-def evaluateOrientation(field, piece, orientationIndex):
+def generateOrientation(field, piece, orientationIndex):
     results = []
     piece.SetCurrentOrientation(orientationIndex)
     for x in range(field.width):        
-        result = evaluatePosition(field, piece, x)
+        result = generatePosition(field, piece, x)
         if result is not None:
             results.append(result)
     return results
     
-def evaluatePosition(field, piece, x):
+def generatePosition(field, piece, x):
     piece.SetPosition(x, 0)
     result = field.findDrop(piece)
     if result is not None:
