@@ -20,12 +20,11 @@ class TetrisField(object):
         self.data = [[EMPTY for _ in range(width)] for _ in range(height)]
         self.width = width
         self.height = height
-        
-    
-    #TODO: store column heights so we don't have to recalc.    
+
+    # TODO: store column heights so we don't have to recalc.    
     def getColumnHeight(self, columnIndex):
         height = 0
-        for y in range(self.height):
+        for y in range(self.height - 1, -1, -1):
             if self.data[y][columnIndex] == EMPTY:
                 return height
             else:
@@ -39,7 +38,7 @@ class TetrisField(object):
             endIndex = self.width - 1            
         # get column heights, endIndex inclusive
         results = []
-        for index in range(startIndex,endIndex+1):
+        for index in range(startIndex, endIndex + 1):
             results.append(self.getColumnHeight(index))
         return results
     
