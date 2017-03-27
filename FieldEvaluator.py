@@ -55,7 +55,7 @@ def evaluateBumpiness(columnHeights):
     score = 0
     prevHeight = columnHeights[0]
     for i in range(1, len(columnHeights)):
-        score += abs(prevHeight - columnHeights[i])
+        score += abs(prevHeight - columnHeights[i])**2 #square, so holes of size 4 are REALLY bad.
         prevHeight = columnHeights[i] 
     return score
 

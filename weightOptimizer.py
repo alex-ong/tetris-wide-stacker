@@ -18,7 +18,7 @@ def evaluateBumpiness(columnHeights):
     score = 0
     prevHeight = columnHeights[0]
     for i in range(1, len(columnHeights)):
-        score += abs(prevHeight - columnHeights[i])
+        score += abs(prevHeight - columnHeights[i]) ** 2
         prevHeight = columnHeights[i] 
     return score
 
@@ -71,12 +71,18 @@ if __name__ == '__main__':
     baseWeights = [1.0, 0.0, 0.0, 1.0]
     
     avgScore = 10000
-    while avgScore > 30:
-        allWeights = GenerateWeights(baseWeights)
-        print ("Evaluating the following weights", allWeights)
+    retryCount = 0  # quit if we are unable to get a better optimization 5 times in a row.
+    while avgScore > 30:  # quit once we are sufficiently flat
+        allWeights = GenerateWeights(baseWeights)        
         results = p.map(EvaluateWeights, allWeights)
-        (baseWeights, avgScore) = findNewBase(results)
+        (newBaseWeights, newAvgScore) = findNewBase(results)
+        if (newAvgScore < avgScore):
+            avgScore = newAvgScore
+            baseWeights = newBaseWeights
+            retryCount = 0
         print ("Average score of currentGeneration", avgScore)
         print ("New BaseWeights:", baseWeights)
+        if retryCount > 5:
+            break
         
         
