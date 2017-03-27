@@ -3,10 +3,10 @@ Basic wrapper around Field that can be fed pieces to listValidPlacements
 '''
 SUB_FIELD_COLUMNS = 8
 
-def evaluate(field, validPlacements):
+def evaluate(field, validPlacements, weights):
     scoreTuples = []
     for validPlacement in validPlacements:
-        score = evaluateSingle(field, validPlacement)
+        score = evaluateSingle(field, validPlacement, weights)
         scoreTuples.append((score, validPlacement))
             
     scoreTuples.sort(key=lambda tup:tup[0])
@@ -31,7 +31,7 @@ def clampRange(fieldWidth, x):
         
     return (startX, endX)    
     
-def evaluateSingle(field, placement):
+def evaluateSingle(field, placement, weights):
     # do the placement.
     field.placePiece(placement)
     (startX, endX) = clampRange(field.width, placement.topLeftCorner[1]) 
@@ -46,10 +46,10 @@ def evaluateSingle(field, placement):
         
     field.unplacePiece(placement)
     # return sum of scores
-    return (pieceHeightScore +  
-            #maxColumnHeightScore * -0.5) 
-            #completedLineScore * -0.05 +
-            bumpinessScore * 1) 
+    return (pieceHeightScore * weights[0] +
+            maxColumnHeightScore * weights[1] +
+            completedLineScore * weights[2] +
+            bumpinessScore * weights[3]) 
     
 def evaluateBumpiness(columnHeights):
     score = 0

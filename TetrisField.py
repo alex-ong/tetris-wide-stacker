@@ -32,7 +32,11 @@ class TetrisField(object):
                 height += 1
         return height
     
-    def getColumnHeights(self, startIndex, endIndex):
+    def getColumnHeights(self, startIndex=None, endIndex=None):
+        if startIndex is None:
+            startIndex = 0
+        if endIndex is None:
+            endIndex = self.width - 1            
         # get column heights, endIndex inclusive
         results = []
         for index in range(startIndex,endIndex+1):
