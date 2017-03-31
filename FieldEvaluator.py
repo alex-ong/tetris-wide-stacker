@@ -2,12 +2,14 @@
 Basic wrapper around Field that can be fed pieces to listValidPlacements
 '''
 SUB_FIELD_COLUMNS = 8
+import TetrisPiece
 
 def evaluate(field, validPlacements, weights):
     scoreTuples = []
     for validPlacement in validPlacements:
         score = evaluateSingle(field, validPlacement, weights)
-        scoreTuples.append((score, validPlacement))
+        fieldRange = clampRange(SUB_FIELD_COLUMNS, validPlacement.topLeftCorner[1])
+        scoreTuples.append((score, validPlacement, fieldRange))
             
     scoreTuples.sort(key=lambda tup:tup[0])
     
@@ -39,17 +41,19 @@ def evaluateSingle(field, placement, weights):
     # do each test and add results
     columnHeights = field.getColumnHeights(startX, endX)
     
-    pieceHeightScore = field.height - placement.topLeftCorner[0]
-    maxColumnHeightScore = max(columnHeights)
-    completedLineScore = min(columnHeights)
-    bumpinessScore = evaluateBumpiness(columnHeights)
-        
+    pieceHeightScore = (field.height - placement.topLeftCorner[0]) if weights[0] != 0.0 else 0.0
+    maxColumnHeightScore = max(columnHeights) if weights[1] != 0.0 else 0.0
+    completedLineScore = min(columnHeights) if weights[2] != 0.0 else 0.0
+    bumpinessScore = evaluateBumpiness(columnHeights) if weights[3] != 0.0 else 0.0
+    otherPieceConformabilityScore = evaluateOtherPieceConformability(field) if weights[4] != 0.0 else 0.0
+    # now reset field back to what it was.    
     field.unplacePiece(placement)
     # return sum of scores
-    return (pieceHeightScore * weights[0] +
-            maxColumnHeightScore * weights[1] +
-            completedLineScore * weights[2] +
-            bumpinessScore * weights[3]) 
+    return (pieceHeightScore * weights[0] + 
+            maxColumnHeightScore * weights[1] + 
+            completedLineScore * weights[2] + 
+            bumpinessScore * weights[3] + 
+            otherPieceConformabilityScore * weights[4]) 
     
 def evaluateBumpiness(columnHeights):
     score = 0
@@ -59,6 +63,15 @@ def evaluateBumpiness(columnHeights):
         prevHeight = columnHeights[i] 
     return score
 
+def evaluateOtherPieceConformability(field):
+    score = 0
+    for piece in TetrisPiece.getBag():
+        validPlacements = listValidPlacements(field, piece)
+        if len(validPlacements) > 0:  # todo. fixed score + metaScore
+            score += 1    
+    return score
+    
+    
 def listValidPlacements(field, piece):
     results = []        
     for i in range(len(piece.offsets)):

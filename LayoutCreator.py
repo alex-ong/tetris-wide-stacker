@@ -51,15 +51,17 @@ class LayoutCreator(object):
             else: #we have skipped 14 pieces. We must be stuck.
                 break
             
-        return piecesPlaced           
+        return piecesPlaced          
+     
 
 
 def printField(field):
-    pass
-    
+    print(field)
+    print('\n')
 if __name__ == '__main__':
-    weights = [-0.05,0.0,0.0,1.0]
-    field = TetrisField.TetrisField(150, 15)
+    weights = [1.0,1.0,0.0,50,0.0]
+    field = TetrisField.TetrisField(30, 30)
     layout = LayoutCreator(field, lambda: printField(field), weights)
     layout.createLayout()
     print (layout.field)
+    print ("Done")

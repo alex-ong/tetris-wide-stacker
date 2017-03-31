@@ -11,23 +11,15 @@ def noFunc():
 
 def scoreField(field):
     columnHeights = field.getColumnHeights()    
-    score = evaluateBumpiness(columnHeights)
-    return score
-
-def evaluateBumpiness(columnHeights):
-    score = 0
-    prevHeight = columnHeights[0]
-    for i in range(1, len(columnHeights)):
-        score += abs(prevHeight - columnHeights[i]) ** 2
-        prevHeight = columnHeights[i] 
+    score = -min(columnHeights) #score is how many completed lines there are.
     return score
 
 def EvaluateWeights(weights):
-    field = TetrisField.TetrisField(150, 15)
+    field = TetrisField.TetrisField(15, 30)
     layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
     layout.createLayout()
-    score = scoreField(field)    
-    print (weights, score)
+    score = scoreField(field)
+    print (weights, score)        
     return (weights, score)
 
 def randomizeWeights(baseWeights):
@@ -40,27 +32,51 @@ def randomizeWeights(baseWeights):
         
 def GenerateWeights(baseWeights):
     result = []
-    for _ in range(12):
+    for _ in range(20):
         result.append(baseWeights.copy())
-    for _ in range(6):
-        result.append(randomizeWeights(baseWeights))
+    
+    #make 5 mutations. Test them 5 times each.
+    for _ in range(5):
+        randomWeights =randomizeWeights(baseWeights)
+        for __ in range(5):                         
+            result.append(randomWeights)
     return result
 
 def findNewBase(results):
     '''results are in the form (weights,score)'''
+    # first concatenate results.
+    
+    newResults = {}
+    
+    for result in results:
+        (weight, score) = result
+        weight = tuple(weight)
+        if weight in newResults:
+            (totalScore, count) = newResults[weight]
+            totalScore += score
+            count += 1
+            newResults[weight] = (totalScore, count) 
+        else:
+            newResults[weight] = (score, 1)
+    
+    results.clear()
+    for key in newResults.keys():
+        results.append((key, newResults[key][0]/newResults[key][1]))
+
     results.sort(key=lambda tup: tup[1])  # we want lowest score.
+    print ("Finding new base out of", results)
     # average the first 5
     avgScore = 0.0
-    finalResult = results[0][0].copy()
-    for i in range(1, 5):
+    finalResult = list(results[0][0])
+    for i in range(1, 3):
         (result, score) = results[i]
         for j in range(len(finalResult)):
             finalResult[j] += result[j]
         avgScore += score
             
     for j in range(len(finalResult)):
-        finalResult[j] /= 5.0
-    avgScore /= 5
+        finalResult[j] /= 3.0
+    avgScore /= 3
     
     
     return (finalResult, avgScore)
@@ -68,11 +84,11 @@ def findNewBase(results):
 if __name__ == '__main__':
     cpu_count = max(1, multiprocessing.cpu_count() - 1)
     p = multiprocessing.Pool(cpu_count)
-    baseWeights = [1.0, 0.0, 0.0, 1.0]
+    baseWeights = [0.8677493555073127, 0.97453014898381, 1.0178958787096912, 0.9315999576603519, 5.0]
     
     avgScore = 10000
     retryCount = 0  # quit if we are unable to get a better optimization 5 times in a row.
-    while avgScore > 30:  # quit once we are sufficiently flat
+    while avgScore > -25 :  # quit once we are sufficiently flat
         allWeights = GenerateWeights(baseWeights)        
         results = p.map(EvaluateWeights, allWeights)
         (newBaseWeights, newAvgScore) = findNewBase(results)
@@ -80,6 +96,8 @@ if __name__ == '__main__':
             avgScore = newAvgScore
             baseWeights = newBaseWeights
             retryCount = 0
+        else:
+            retryCount += 1
         print ("Average score of currentGeneration", avgScore)
         print ("New BaseWeights:", baseWeights)
         if retryCount > 5:

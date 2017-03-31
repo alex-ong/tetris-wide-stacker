@@ -152,6 +152,14 @@ class TetrisField(object):
             resultRows.append(''.join(row))        
         return '\n'.join(resultRows)
         
+    def copySubFields(self, range):            
+        result = TetrisField()  # create empty field
+        startX,endX = range       
+        result.data = [row[startX:endX] for row in self.data]
+        result.width = endX-startX  # post-set width/height
+        result.height = self.height
+        
+        return result
         
 
 if __name__ == '__main__':    
