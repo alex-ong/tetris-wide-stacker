@@ -31,7 +31,7 @@ class LayoutCreator(object):
         self.nextPieces.append(ShuffleMarker())
         
     def createLayout(self):        
-        numPieces = int(self.field.width * self.field.height / 4 / 2)  # only fill half high
+        numPieces = int(self.field.width * self.field.height / 4 * 0.65)  # only fill 65%
         piecesPlaced = 0
         stallCounter = 0
         while piecesPlaced < numPieces:        
@@ -59,8 +59,8 @@ def printField(field):
     print(field)
     print('\n')
 if __name__ == '__main__':
-    weights = [1.0,1.0,0.0,50,0.0]
-    field = TetrisField.TetrisField(30, 30)
+    weights = [100.0,1.0,0.0,50,0.0]
+    field = TetrisField.TetrisField(300, 15)
     layout = LayoutCreator(field, lambda: printField(field), weights)
     layout.createLayout()
     print (layout.field)
