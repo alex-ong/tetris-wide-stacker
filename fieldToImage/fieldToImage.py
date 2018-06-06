@@ -17,6 +17,7 @@ if __name__ == '__main__':
     I_image = Image.open('i.png')
     S_image = Image.open('s.png')
     Z_image = Image.open('z.png')
+    blank = None # Image.open('blank.png')
     
     lookup = { 'L': L_image,
                'J': J_image,
@@ -25,7 +26,7 @@ if __name__ == '__main__':
                'I': I_image,
                'S': S_image,
                'Z': Z_image,
-               '.': None}
+               '.': blank}
     
     canvas = Image.new('RGB', (len(lines[0]) * L_image.size[0], len(lines) * L_image.size[0]), color=0)
     
