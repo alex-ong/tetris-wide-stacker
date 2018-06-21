@@ -4,6 +4,13 @@ Basic wrapper around Field that can be fed pieces to listValidPlacements
 SUB_FIELD_COLUMNS = 8
 import TetrisPiece
 
+PIECE_HEIGHT_SCORE = 0
+MAX_HEIGHT_SCORE = 1
+LINE_SCORE = 2 
+BUMPINESS_SCORE = 3
+OTHER_PIECE_CONFORM_SCORE = 4
+
+
 def evaluate(field, validPlacements, weights):
     scoreTuples = []
     for validPlacement in validPlacements:
@@ -41,13 +48,15 @@ def evaluateSingle(field, placement, weights):
     # do each test and add results
     columnHeights = field.getColumnHeights(startX, endX)
     
-    pieceHeightScore = (field.height - placement.topLeftCorner[0]) if weights[0] != 0.0 else 0.0
-    maxColumnHeightScore = max(columnHeights) if weights[1] != 0.0 else 0.0
-    completedLineScore = min(columnHeights) if weights[2] != 0.0 else 0.0
-    bumpinessScore = evaluateBumpiness(columnHeights) if weights[3] != 0.0 else 0.0
-    otherPieceConformabilityScore = evaluateOtherPieceConformability(field) if weights[4] != 0.0 else 0.0
+    pieceHeightScore = (field.height - placement.topLeftCorner[0]) if weights[PIECE_HEIGHT_SCORE] != 0.0 else 0.0
+    maxColumnHeightScore = max(columnHeights) if weights[MAX_HEIGHT_SCORE] != 0.0 else 0.0
+    completedLineScore = min(columnHeights) if weights[LINE_SCORE] != 0.0 else 0.0
+    bumpinessScore = evaluateBumpiness(columnHeights) if weights[BUMPINESS_SCORE] != 0.0 else 0.0
+    otherPieceConformabilityScore = evaluateOtherPieceConformability(field) if weights[OTHER_PIECE_CONFORM_SCORE] != 0.0 else 0.0
+    
     # now reset field back to what it was.    
     field.unplacePiece(placement)
+    
     # return sum of scores
     return (pieceHeightScore * weights[0] + 
             maxColumnHeightScore * weights[1] + 
