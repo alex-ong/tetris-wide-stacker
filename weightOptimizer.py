@@ -6,15 +6,14 @@ from multiprocessing import cpu_count
 import random
 import itertools
 
+from FieldEvaluator import PIECE_HEIGHT_SCORE, MAX_HEIGHT_SCORE, LINE_SCORE, BUMPINESS_SCORE, OTHER_PIECE_CONFORM_SCORE
+
 PROGRESS_BAR = False
 try:
     import tqdm
     PROGRESS_BAR = True
 except:
     pass
-
-from FieldEvaluator import PIECE_HEIGHT_SCORE, MAX_HEIGHT_SCORE, LINE_SCORE, BUMPINESS_SCORE, OTHER_PIECE_CONFORM_SCORE
-
 
 def noFunc():
     pass
@@ -26,15 +25,11 @@ def scoreField(field):
     return score
 
 
-def EvaluateWeights(items):
-    weights, pbar = items
+def EvaluateWeights(weights):
     field = TetrisField.TetrisField(15, 30)
     layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
     layout.createLayout()
-    score = scoreField(field)
-    if pbar is not None:
-        pbar.update(1)
-        
+    score = scoreField(field)        
     return (weights, score)
 
 
@@ -91,14 +86,13 @@ current_iteration = 0
 if __name__ == '__main__':
     cpu_count = max(1, multiprocessing.cpu_count() - 1)
     pool = multiprocessing.Pool(cpu_count)
-    
+    global pbar
     # 1. Initialize Population
     allWeights = [baseWeights.copy(), baseWeights.copy()]  # population of 2.
-    allWeights = [[item, None] for item in allWeights] #append no progressbar.
+     
     # 2. Evaluate population
     results = list(pool.imap_unordered(EvaluateWeights, allWeights))
-    
-    
+
     results.sort(key=lambda result: result[1], reverse=True)  
     # 3. while (!stopcondition) do:
     while current_iteration < iterations:        
@@ -114,16 +108,14 @@ if __name__ == '__main__':
         # 5.2 breed via crossover
         crossovers = getCrossover(bestIndividuals)         
         # 6. evaluate the individual fitness of new individuals
-        childWeights = mutators + crossovers
-        
-        if PROGRESS_BAR:            
-            pbar = tqdm.tqdm(total=len(childWeights))
+        childWeights = mutators + crossovers        
+
+        poolTasks = pool.imap_unordered(EvaluateWeights, childWeights)
+        if PROGRESS_BAR:
+            childResults = list(tqdm.tqdm(poolTasks, total=len(childWeights)))
         else:
-            pbar = None
-    
-        childWeights = [[item, pbar] for item in childWeights] #append no progressbar.        
-        poolTasks = pool.imap_unordered(EvaluateWeights, childWeights)                            
-        childResults = list(poolTasks)                
+            childResults = list(poolTasks)
+                        
         # 7. replace least-fit population with new individuals. 
         results += childResults
         results.sort(key=lambda result: result[1], reverse=True)
