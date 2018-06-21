@@ -25,12 +25,16 @@ def scoreField(field):
     return score
 
 
-def EvaluateWeights(weights):
-    field = TetrisField.TetrisField(15, 30)
-    layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
-    layout.createLayout()
-    score = scoreField(field)        
-    return (weights, score)
+def EvaluateWeights(weights):  
+    total = 0  
+    for _ in range(NUM_SIMULATIONS_PER_WEIGHTS):
+        field = TetrisField.TetrisField(15, 30)
+        layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
+        layout.createLayout()
+        score = scoreField(field)
+        total += score
+    total = total / float(NUM_SIMULATIONS_PER_WEIGHTS)        
+    return (weights, total)
 
 
 def mutateIndex(weights, index):
@@ -82,7 +86,7 @@ baseWeights = [0.8677493555073127, 0.97453014898381, 1.0178958787096912, 0.93159
 bestIndividualSize = 5    
 iterations = 100
 current_iteration = 0
-            
+NUM_SIMULATIONS_PER_WEIGHTS = 5            
 if __name__ == '__main__':
     cpu_count = max(1, multiprocessing.cpu_count() - 1)
     pool = multiprocessing.Pool(cpu_count)
@@ -119,9 +123,9 @@ if __name__ == '__main__':
         # 7. replace least-fit population with new individuals. 
         results += childResults
         results.sort(key=lambda result: result[1], reverse=True)
-        print ('scores:')  
-        for result in results:
-            print (result)
         current_iteration += 1
-        print ("Iteration " + str(current_iteration) + str(results[0]))
+        printout = ("Iteration " + str(current_iteration) + str(results[0]))
+        print (printout)
+        with open ("optimization.txt", 'a') as f:
+            f.write(printout)
         
