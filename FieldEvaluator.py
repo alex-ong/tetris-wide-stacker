@@ -10,7 +10,6 @@ LINE_SCORE = 2
 BUMPINESS_SCORE = 3
 OTHER_PIECE_CONFORM_SCORE = 4
 
-
 def evaluate(field, validPlacements, weights):
     scoreTuples = []
     for validPlacement in validPlacements:
