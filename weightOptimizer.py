@@ -28,7 +28,7 @@ def scoreField(field):
 def EvaluateWeights(weights):  
     total = 0  
     for _ in range(NUM_SIMULATIONS_PER_WEIGHTS):
-        field = TetrisField.TetrisField(15, 30)
+        field = TetrisField.TetrisField(30, 20)
         layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
         layout.createLayout()
         score = scoreField(field)
@@ -39,13 +39,13 @@ def EvaluateWeights(weights):
 
 def mutateIndex(weights, index):
     if index == PIECE_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.03, 0.03)
+        weights[index] += random.uniform(-0.1, 0.1)
     elif index == MAX_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.03, 0.03)
+        weights[index] += random.uniform(-0.1, 0.1)
     elif index == LINE_SCORE:
-        weights[index] += random.uniform(-0.03, 0.03)
+        weights[index] += random.uniform(-0.1, 0.1)
     elif index == BUMPINESS_SCORE:
-        weights[index] += random.uniform(-0.03, 0.03)
+        weights[index] += random.uniform(-0.1, 0.1)
     elif index == OTHER_PIECE_CONFORM_SCORE:
         weights[index] += random.uniform(-0.4, 0.4)
 
@@ -81,16 +81,15 @@ def getCrossover(bestIndividuals):
                 results.append(newResult)
     return results
 
-
-baseWeights = [0.8677493555073127, 0.97453014898381, 1.0178958787096912, 0.9315999576603519, 5.0] 
+baseWeights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
 bestIndividualSize = 5    
 iterations = 100
 current_iteration = 0
-NUM_SIMULATIONS_PER_WEIGHTS = 5            
+NUM_SIMULATIONS_PER_WEIGHTS = 1
 if __name__ == '__main__':
     cpu_count = max(1, multiprocessing.cpu_count() - 1)
     pool = multiprocessing.Pool(cpu_count)
-    global pbar
+
     # 1. Initialize Population
     allWeights = [baseWeights.copy(), baseWeights.copy()]  # population of 2.
      
@@ -123,9 +122,19 @@ if __name__ == '__main__':
         # 7. replace least-fit population with new individuals. 
         results += childResults
         results.sort(key=lambda result: result[1], reverse=True)
+
+        print ("Printing current results...")
+        i = 0
+        for result in results:
+            if i >= 4:
+                break
+            print (result)
+            i += 1
+
         current_iteration += 1
         printout = ("Iteration " + str(current_iteration) + str(results[0]))
         print (printout)
         with open ("optimization.txt", 'a') as f:
             f.write(printout)
+            f.write('\n')
         
