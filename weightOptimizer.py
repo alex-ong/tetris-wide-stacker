@@ -18,17 +18,37 @@ except:
 def noFunc():
     pass
 
+import math
+
+def magnitude(v):
+    return math.sqrt(sum(v[i]*v[i] for i in range(len(v))))
+
+def add(u, v):
+    return [ u[i]+v[i] for i in range(len(u)) ]
+
+def sub(u, v):
+    return [ u[i]-v[i] for i in range(len(u)) ]
+
+def dot(u, v):
+    return sum(u[i]*v[i] for i in range(len(u)))
+
+def normalize(v):
+    vmag = magnitude(v)
+    return [ v[i]/vmag  for i in range(len(v)) ]
+
 
 def scoreField(field):
     columnHeights = field.getColumnHeights()    
-    score = min(columnHeights)  # score is how many completed lines there are.
+    # score is mainly how many lines are completed.
+    # minor score bonus for how many minos are filled
+    score = min(columnHeights) * 10000 + sum(columnHeights)
     return score
 
 
 def EvaluateWeights(weights):  
     total = 0  
     for _ in range(NUM_SIMULATIONS_PER_WEIGHTS):
-        field = TetrisField.TetrisField(30, 20)
+        field = TetrisField.TetrisField(10, 50)
         layout = LayoutCreator.LayoutCreator(field, noFunc, weights)
         layout.createLayout()
         score = scoreField(field)
@@ -39,15 +59,15 @@ def EvaluateWeights(weights):
 
 def mutateIndex(weights, index):
     if index == PIECE_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.1, 0.1)
+        weights[index] += random.uniform(-0.2, 0.2)
     elif index == MAX_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.1, 0.1)
+        weights[index] += random.uniform(-0.2, 0.2)
     elif index == LINE_SCORE:
-        weights[index] += random.uniform(-0.1, 0.1)
+        weights[index] += random.uniform(-0.2, 0.2)
     elif index == BUMPINESS_SCORE:
-        weights[index] += random.uniform(-0.1, 0.1)
+        weights[index] += random.uniform(-0.2, 0.2)
     elif index == OTHER_PIECE_CONFORM_SCORE:
-        weights[index] += random.uniform(-0.4, 0.4)
+        weights[index] += random.uniform(-0.2, 0.2)
 
         
 def getMutators(bestIndividuals):
@@ -56,6 +76,7 @@ def getMutators(bestIndividuals):
         for i in range(len(weights)):
             newResult = weights.copy()
             mutateIndex(newResult, i)
+            newResult = normalize(newResult)
             results.append(newResult)
     return results
 
@@ -78,14 +99,16 @@ def getCrossover(bestIndividuals):
             if left[index] != weight:  # quick redundancy check.
                 newResult = pair[0].copy()
                 newResult[index] = weight
+                newResult = normalize(newResult)
                 results.append(newResult)
     return results
 
 baseWeights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
+baseWeights = [1.0, 1.0, 1.0, 1.0, 1.0]
 bestIndividualSize = 5    
 iterations = 100
 current_iteration = 0
-NUM_SIMULATIONS_PER_WEIGHTS = 1
+NUM_SIMULATIONS_PER_WEIGHTS = 20
 if __name__ == '__main__':
     cpu_count = max(1, multiprocessing.cpu_count() - 1)
     pool = multiprocessing.Pool(cpu_count)
