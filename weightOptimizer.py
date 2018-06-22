@@ -104,7 +104,7 @@ def getCrossover(bestIndividuals):
     return results
 
 baseWeights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
-baseWeights = [1.0, 1.0, 1.0, 1.0, 1.0]
+baseWeights = [-1.0, -1.0, 1.0, -1.0, 1.0]
 bestIndividualSize = 5    
 iterations = 100
 current_iteration = 0

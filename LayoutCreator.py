@@ -2,18 +2,22 @@
 Class that does the main loop that creates a layout.
 '''
 import TetrisField, TetrisPiece, FieldEvaluator
+from StallCounter import StallCounter
+
 
 class ShuffleMarker(object):
     pass
 
+
 class LayoutCreator(object):
+
     def __init__(self, field, onPlacePiece, weights):
         self.field = field
         self.onPlacePiece = onPlacePiece
         self.nextPieces = []
         self.weights = weights
         self.refillBag()
-    
+        
     def getPiece(self):        
         result = self.nextPieces.pop(0)
         
@@ -29,11 +33,11 @@ class LayoutCreator(object):
     def refillBag(self):
         self.nextPieces.extend(TetrisPiece.getRandomBag())
         self.nextPieces.append(ShuffleMarker())
-        
+    
     def createLayout(self):        
-        numPieces = int(self.field.width * self.field.height / 4 * 0.65)  # only fill 65%
+        numPieces = int(self.field.width * self.field.height / 4)  # only fill 65%
         piecesPlaced = 0
-        stallCounter = 0
+        stallCounter = StallCounter()
         while piecesPlaced < numPieces:        
             piece = self.getPiece()            
             
@@ -44,24 +48,26 @@ class LayoutCreator(object):
                 self.field.placePiece(finalPlacements[0][1])  # choose first one for now
                 self.onPlacePiece()
                 piecesPlaced += 1
-                stallCounter = 0    
-            elif stallCounter < 14:  # no placements, put the piece back into end of queue                
+                stallCounter.resetStall()   
+            else:
+                stallCounter.addStall(piece.typeString)                
                 self.returnPiece(piece)
-                stallCounter += 1
-            else: #we have skipped 14 pieces. We must be stuck.
-                break
+                if stallCounter.isStalled():
+                    break            
             
         return piecesPlaced          
-     
-
-
+    
+                
 def printField(field):
     print(field)
     print('\n')
+
+
 if __name__ == '__main__':
-    weights = [100.0,1.0,0.0,50,0.0]
-    field = TetrisField.TetrisField(300, 15)
+    weights = [1.0, 1.0, 0.0, -1.0, 1.0]
+    field = TetrisField.TetrisField(15, 30)
     layout = LayoutCreator(field, lambda: printField(field), weights)
     layout.createLayout()
     print (layout.field)
     print ("Done")
+    print (len(layout.nextPieces))

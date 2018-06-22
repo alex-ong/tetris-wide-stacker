@@ -10,16 +10,40 @@ LINE_SCORE = 2
 BUMPINESS_SCORE = 3
 OTHER_PIECE_CONFORM_SCORE = 4
 
+
 def evaluate(field, validPlacements, weights):
     scoreTuples = []
+    summedScoreTuples = []
+    maxConformScore = None
     for validPlacement in validPlacements:
-        score = evaluateSingle(field, validPlacement, weights)
+        scores = evaluateSingle(field, validPlacement, weights)
+        conformScore = scores[OTHER_PIECE_CONFORM_SCORE]
+        if maxConformScore is None or conformScore > maxConformScore:
+            maxConformScore = conformScore
         fieldRange = clampRange(SUB_FIELD_COLUMNS, validPlacement.topLeftCorner[1])
-        scoreTuples.append((score, validPlacement, fieldRange))
-            
-    scoreTuples.sort(key=lambda tup:tup[0])
+        scoreTuples.append([scores, validPlacement, fieldRange])
     
-    return scoreTuples
+    # now, unpack and calculate final score.
+    for scoreTuple in scoreTuples:
+        scores, validPlacement, fieldRange = scoreTuple
+        #scale maxConformScore.
+        conformScore = scores[OTHER_PIECE_CONFORM_SCORE]  
+        if maxConformScore is not None and maxConformScore > 0.0:
+            conformScore = conformScore / maxConformScore
+        else:
+            conformScore = 0.0
+        scores[OTHER_PIECE_CONFORM_SCORE] = conformScore
+        
+        finalScore = (scores[PIECE_HEIGHT_SCORE] * weights[PIECE_HEIGHT_SCORE] +
+                    scores[MAX_HEIGHT_SCORE] * weights[MAX_HEIGHT_SCORE] +
+                    scores[LINE_SCORE] * weights[LINE_SCORE] +
+                    scores[BUMPINESS_SCORE] * weights[BUMPINESS_SCORE] +
+                    scores[OTHER_PIECE_CONFORM_SCORE] * weights[OTHER_PIECE_CONFORM_SCORE])
+        summedScoreTuples.append((finalScore,validPlacement, fieldRange))
+        
+    summedScoreTuples.sort(key=lambda tup:tup[0])
+    return summedScoreTuples
+
 
 def clampRange(fieldWidth, x):
     '''
@@ -38,7 +62,9 @@ def clampRange(fieldWidth, x):
         startX -= diff
         
     return (startX, endX)    
+
     
+# evaluate a field with a placement. Weights only used to skip evaluation if they are 0.
 def evaluateSingle(field, placement, weights):
     # do the placement.
     field.placePiece(placement)
@@ -56,27 +82,28 @@ def evaluateSingle(field, placement, weights):
     # now reset field back to what it was.    
     field.unplacePiece(placement)
     
-    # return sum of scores
-    return (pieceHeightScore * weights[0] + 
-            maxColumnHeightScore * weights[1] + 
-            completedLineScore * weights[2] + 
-            bumpinessScore * weights[3] + 
-            otherPieceConformabilityScore * weights[4]) 
+    # return scores, non-multiplied by weights since otherPieceConformability needs to be scaled.
+    return [pieceHeightScore,
+            maxColumnHeightScore,
+            completedLineScore,
+            bumpinessScore,
+            otherPieceConformabilityScore]
+
     
 def evaluateBumpiness(columnHeights):
     score = 0
     prevHeight = columnHeights[0]
     for i in range(1, len(columnHeights)):
-        score += abs(prevHeight - columnHeights[i])**2 #square, so holes of size 4 are REALLY bad.
+        score += abs(prevHeight - columnHeights[i]) ** 2  # square, so holes of size 4 are REALLY bad.
         prevHeight = columnHeights[i] 
     return score
+
 
 def evaluateOtherPieceConformability(field):
     score = 0
     for piece in TetrisPiece.getBag():
         validPlacements = listValidPlacements(field, piece)
-        if len(validPlacements) > 0:  # todo. fixed score + metaScore
-            score += 1    
+        score += len(validPlacements)
     return score
     
     
@@ -85,6 +112,7 @@ def listValidPlacements(field, piece):
     for i in range(len(piece.offsets)):
         results.extend(generateOrientation(field, piece, i))        
     return results
+
     
 def generateOrientation(field, piece, orientationIndex):
     results = []
@@ -94,6 +122,7 @@ def generateOrientation(field, piece, orientationIndex):
         if result is not None:
             results.append(result)
     return results
+
     
 def generatePosition(field, piece, x):
     piece.SetPosition(x, 0)
