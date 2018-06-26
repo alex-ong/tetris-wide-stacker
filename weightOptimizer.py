@@ -59,15 +59,15 @@ def EvaluateWeights(weights):
 
 def mutateIndex(weights, index):
     if index == PIECE_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.2, 0.2)
+        weights[index] += random.uniform(-0.5, 0.5)
     elif index == MAX_HEIGHT_SCORE:
-        weights[index] += random.uniform(-0.2, 0.2)
+        weights[index] += random.uniform(-0.5, 0.5)
     elif index == LINE_SCORE:
-        weights[index] += random.uniform(-0.2, 0.2)
+        weights[index] += random.uniform(-0.5, 0.5)
     elif index == BUMPINESS_SCORE:
-        weights[index] += random.uniform(-0.2, 0.2)
+        weights[index] += random.uniform(-0.5, 0.5)
     elif index == OTHER_PIECE_CONFORM_SCORE:
-        weights[index] += random.uniform(-0.2, 0.2)
+        weights[index] += random.uniform(-0.5, 0.5)
 
         
 def getMutators(bestIndividuals):
@@ -105,6 +105,8 @@ def getCrossover(bestIndividuals):
 
 baseWeights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
 baseWeights = [-1.0, -1.0, 1.0, -1.0, 1.0]
+baseWeights = [0.38707922898405445, 0.45657240038841845, -0.4153730549602689, 0.43310741142886816, -0.5306547927523376]
+
 bestIndividualSize = 5    
 iterations = 100
 current_iteration = 0
