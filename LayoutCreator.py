@@ -8,6 +8,9 @@ from StallCounter import StallCounter
 class ShuffleMarker(object):
     pass
 
+STRICT = 0 # only allow maximum of 14 pieces of non placement
+LENIENT = 1 # allow infinite as long as a piece can be placed
+STALL_MODE=STRICT
 
 class LayoutCreator(object):
 
@@ -38,6 +41,8 @@ class LayoutCreator(object):
         numPieces = int(self.field.width * self.field.height / 4)  # only fill 65%
         piecesPlaced = 0
         stallCounter = StallCounter()
+        stallPieces = 0
+        
         while piecesPlaced < numPieces:        
             piece = self.getPiece()            
             
@@ -48,12 +53,20 @@ class LayoutCreator(object):
                 self.field.placePiece(finalPlacements[0][1])  # choose first one for now
                 self.onPlacePiece()
                 piecesPlaced += 1
-                stallCounter.resetStall()   
+                if STALL_MODE == LENIENT:
+                    stallCounter.resetStall()
+                else:
+                    stallPieces = 0   
             else:
-                stallCounter.addStall(piece.typeString)                
                 self.returnPiece(piece)
-                if stallCounter.isStalled():
-                    break            
+                if STALL_MODE == LENIENT:
+                    stallCounter.addStall(piece.typeString)                                    
+                    if stallCounter.isStalled():
+                        break            
+                else:
+                    stallPieces += 1
+                    if stallPieces > 14:
+                        break
             
         return piecesPlaced          
     
@@ -64,8 +77,8 @@ def printField(field):
 
 
 if __name__ == '__main__':
-    weights = [1.0, 1.0, 0.0, -1.0, 1.0]
-    field = TetrisField.TetrisField(15, 30)
+    weights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
+    field = TetrisField.TetrisField(45, 30)
     layout = LayoutCreator(field, lambda: printField(field), weights)
     layout.createLayout()
     print (layout.field)
