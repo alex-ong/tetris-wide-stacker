@@ -20,7 +20,7 @@ LIMIT_INT = TetrisPiece.typeStringToInt[LIMIT]
     
 class TetrisField(object):
     def __init__(self, width=0, height=0):
-        self.data = np.zeros(shape=(width,height),dtype=np.uint8)
+        self.data = np.zeros(shape=(height,width),dtype=np.uint8)
         self.width = width
         self.height = height
 
