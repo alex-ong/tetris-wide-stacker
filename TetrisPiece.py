@@ -58,10 +58,23 @@ def getRandomBag():
     random.shuffle(pieces)
     return pieces
 
+typeStringToInt = {'.': 0,
+                   'L': 1, 
+                   'O': 2,
+                   'S': 3,
+                   'T': 4,
+                   'J': 5,
+                   'I': 6,
+                   'Z': 7,
+                   'X': 8
+                  }
+typeIntToString = {v:k for k,v in typeStringToInt.items()}
+    
 class TetrisPiece(object):
     def __init__(self, offsets, typeString):
         self.offsets = offsets  # array of offset arrays, stored in (y,x) format
         self.typeString = typeString
+        self.typeInt = typeStringToInt[typeString]
         self.topLeftCorner = [0, 0]  # stored in y, x
         self.currentOrientation = None
         
