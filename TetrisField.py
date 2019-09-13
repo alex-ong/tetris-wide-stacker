@@ -5,7 +5,7 @@ Can check if a given tetrisPiece can fit.
 '''
 
 import TetrisPiece
-
+import numpy as np
 from enum import Enum
 
 class PerfectFit(Enum):
@@ -15,9 +15,12 @@ class PerfectFit(Enum):
 
 EMPTY = '.'
 LIMIT = 'X'
+EMPTY_INT = TetrisPiece.typeStringToInt[EMPTY]
+LIMIT_INT = TetrisPiece.typeStringToInt[LIMIT]
+    
 class TetrisField(object):
     def __init__(self, width=0, height=0):
-        self.data = [[EMPTY for _ in range(width)] for _ in range(height)]
+        self.data = np.zeros(shape=(width,height),dtype=np.uint8)
         self.width = width
         self.height = height
 
@@ -25,7 +28,7 @@ class TetrisField(object):
     def getColumnHeight(self, columnIndex):
         height = 0
         for y in range(self.height - 1, -1, -1):
-            if self.data[y][columnIndex] == EMPTY:
+            if self.data[y,columnIndex] == EMPTY_INT:
                 return height
             else:
                 height += 1
@@ -44,7 +47,7 @@ class TetrisField(object):
     
     def copy(self):
         result = TetrisField()  # create empty field       
-        result.data = [row[:] for row in self.data]
+        result.data = np.copy(self.data)
         result.width = self.width  # post-set width/height
         result.height = self.height
         
@@ -79,10 +82,11 @@ class TetrisField(object):
             # place the piece then check under the piece to make sure it conforms perfectly
             self.placePiece(piece)
             allCellsHappy = True
-            for position in finalPositions:
-                positionBelow = (position[0] + 1, position[1])          
-                positionLeft = (position[0], position[1] - 1)
-                positionRight = (position[0], position[1] + 1)
+            for cellPosition in finalPositions:
+                y, x = cellPosition
+                positionBelow = (y+1, x)          
+                positionLeft =  (y,   x-1)
+                positionRight = (y,   x+1)
                 
                 # place values of cells into variables...
                 cellDown = self.getCellValue(positionBelow[0], positionBelow[1])
@@ -90,18 +94,20 @@ class TetrisField(object):
                 cellRight = self.getCellValue(positionRight[0], positionRight[1]) 
                 
                 # (position, cellVal, cellCanBeEmpty)
-                comparisons = ((positionBelow, cellDown, False), (positionLeft, cellLeft, True), (positionRight, cellRight, True))
+                comparisons = ((positionBelow, cellDown, False), 
+                               (positionLeft, cellLeft, True), 
+                               (positionRight, cellRight, True))
                 
                 for comparison in comparisons:
                     (pos, cellVal, emptyOK) = comparison
                     if pos in finalPositions:  # ok
                         continue
-                    elif cellVal == LIMIT:  # ok
+                    elif cellVal == LIMIT_INT:  # ok
                         continue
                     elif cellVal == piece.typeString:
                         allCellsHappy = False
                         break
-                    elif (cellVal == EMPTY and not emptyOK):
+                    elif (cellVal == EMPTY_INT and not emptyOK):
                         allCellsHappy = False
                         break 
 
@@ -111,12 +117,12 @@ class TetrisField(object):
             else:
                 return PerfectFit.CONTINUE
     
-    # safe get cell value. returns LIMIT if outside bounds
+    # safe get cell value. returns LIMIT_INT if outside bounds
     def getCellValue(self, y, x):
         try:
-            result = self.data[y][x]
+            result = self.data[y,x]
         except IndexError:
-            result = LIMIT
+            result = LIMIT_INT
         return result
     
     def cellHappy(self, typeString1, typeString2):
@@ -124,10 +130,11 @@ class TetrisField(object):
             
     # returns true if any of the positions given collide with the matrix        
     def collides(self, positions):    
+
         for position in positions:
             (y, x) = position
             try:
-                if self.data[y][x] != '.':
+                if self.data[y, x] != EMPTY_INT:
                     return True
             except IndexError:
                 return True
@@ -138,24 +145,24 @@ class TetrisField(object):
         (posOffsetY, posOffsetX) = piece.topLeftCorner
         for offset in piece.currentOrientation:
             (y, x) = offset
-            self.data[y + posOffsetY][x + posOffsetX] = piece.typeString
+            self.data[y + posOffsetY, x + posOffsetX] = piece.typeInt
             
     def unplacePiece(self, piece):
         (posOffsetY, posOffsetX) = piece.topLeftCorner
         for offset in piece.currentOrientation:
             (y, x) = offset
-            self.data[y + posOffsetY][x + posOffsetX] = EMPTY  
+            self.data[y + posOffsetY, x + posOffsetX] = EMPTY_INT  
               
     def __str__(self):
         resultRows = []        
         for row in self.data:
-            resultRows.append(''.join(row))        
+            resultRows.append(''.join(TetrisPiece.typeIntToString[x] for x in row))        
         return '\n'.join(resultRows)
         
-    def copySubFields(self, range):            
+    def copySubFields(self, x_range):            
         result = TetrisField()  # create empty field
-        startX,endX = range       
-        result.data = [row[startX:endX] for row in self.data]
+        startX,endX = x_range       
+        result.data = self.data[:,startX:endX]
         result.width = endX-startX  # post-set width/height
         result.height = self.height
         
