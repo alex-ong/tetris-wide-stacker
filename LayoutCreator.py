@@ -78,7 +78,7 @@ def printField(field):
 
 if __name__ == '__main__':
     weights = [0.8890815185456057, 0.97453014898381, 1.0407397937520542, 0.9422826076414598, 5.0]
-    field = TetrisField.TetrisField(45, 30)
+    field = TetrisField.TetrisField(10, 20)
     layout = LayoutCreator(field, lambda: printField(field), weights)
     layout.createLayout()
     print (layout.field)

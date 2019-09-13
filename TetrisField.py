@@ -23,33 +23,34 @@ class TetrisField(object):
         self.data = np.zeros(shape=(height,width),dtype=np.uint8)
         self.width = width
         self.height = height
+        self.columnHeights = np.zeros(shape=(width,),dtype=np.uint8)
 
     # TODO: store column heights so we don't have to recalc.    
-    def getColumnHeight(self, columnIndex):
-        height = 0
-        for y in range(self.height - 1, -1, -1):
-            if self.data[y,columnIndex] == EMPTY_INT:
-                return height
-            else:
-                height += 1
-        return height
+    def getColumnHeight(self, columnIndex, recalc=False):
+        if recalc:
+            height = 0
+            for y in range(self.height - 1, -1, -1):
+                if self.data[y,columnIndex] == EMPTY_INT:                    
+                    break
+                else:
+                    height += 1
+            self.columnHeights[columnIndex] = height
+            
+        return self.columnHeights[columnIndex]
     
     def getColumnHeights(self, startIndex=None, endIndex=None):
         if startIndex is None:
             startIndex = 0
         if endIndex is None:
             endIndex = self.width - 1            
-        # get column heights, endIndex inclusive
-        results = []
-        for index in range(startIndex, endIndex + 1):
-            results.append(self.getColumnHeight(index))
-        return results
+        return self.columnHeights[startIndex:endIndex]
     
     def copy(self):
         result = TetrisField()  # create empty field       
         result.data = np.copy(self.data)
         result.width = self.width  # post-set width/height
         result.height = self.height
+        result.columnHeights = np.copy(self.columnHeights)
         
         return result
     
@@ -119,18 +120,15 @@ class TetrisField(object):
     
     # safe get cell value. returns LIMIT_INT if outside bounds
     def getCellValue(self, y, x):
-        try:
-            result = self.data[y,x]
-        except IndexError:
-            result = LIMIT_INT
-        return result
+        if 0 <= y < self.height and 0 <= x < self.width:
+            return self.data[y,x]
+        return LIMIT_INT
     
     def cellHappy(self, typeString1, typeString2):
         return typeString1 != typeString2
             
     # returns true if any of the positions given collide with the matrix        
     def collides(self, positions):    
-
         for position in positions:
             (y, x) = position
             try:
@@ -145,14 +143,22 @@ class TetrisField(object):
         (posOffsetY, posOffsetX) = piece.topLeftCorner
         for offset in piece.currentOrientation:
             (y, x) = offset
-            self.data[y + posOffsetY, x + posOffsetX] = piece.typeInt
+            (y, x) = y+posOffsetY, x+posOffsetX
+            self.data[y, x] = piece.typeInt
+            self.columnHeights[x] = max(self.columnHeights[x], self.height - y)
             
     def unplacePiece(self, piece):
         (posOffsetY, posOffsetX) = piece.topLeftCorner
+        s = set()
         for offset in piece.currentOrientation:
             (y, x) = offset
-            self.data[y + posOffsetY, x + posOffsetX] = EMPTY_INT  
-              
+            (y, x) = y+posOffsetY, x+posOffsetX
+            self.data[y, x] = EMPTY_INT  
+            s.add(x)
+        
+        for x in s:
+            self.getColumnHeight(x,True)
+            
     def __str__(self):
         resultRows = []        
         for row in self.data:
@@ -165,17 +171,19 @@ class TetrisField(object):
         result.data = self.data[:,startX:endX]
         result.width = endX-startX  # post-set width/height
         result.height = self.height
-        
+        result.columnHeights = self.columnHeights[startX:endX]
         return result
         
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    import time
+    t = time.time()    
     x = 0
-    fieldWidth = 16
-    fieldHeight = 20
+    fieldWidth = 10
+    fieldHeight = 100
     field = TetrisField(fieldWidth, fieldHeight)
     fields = []
-    
+
     # put each piece in each orientation in 4x4 empty grid things
     for piece in TetrisPiece.getBag():
         for i in range(len(piece.offsets)):
@@ -188,6 +196,8 @@ if __name__ == '__main__':
                     fields.append(field.copy())
                     field.unplacePiece(result)                    
     
-    for field in fields:
-        print(field , '\n')
+    #for field in fields:
+    #    print(field , '\n')
     
+
+    print (time.time() - t)
