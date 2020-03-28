@@ -1,7 +1,7 @@
 from PIL import Image
 
 inputFile = 'layout.txt'
-outputFile = 'output%0d.png'
+outputFile = 'output%03d.png'
 
 L_image = Image.open('l.png')
 J_image = Image.open('j.png')
@@ -10,6 +10,7 @@ O_image = Image.open('o.png')
 I_image = Image.open('i.png')
 S_image = Image.open('s.png')
 Z_image = Image.open('z.png')
+D_image = Image.open('d.png')
 blank = None # Image.open('blank.png')
 
 lookup = { 'L': L_image,
@@ -19,6 +20,7 @@ lookup = { 'L': L_image,
            'I': I_image,
            'S': S_image,
            'Z': Z_image,
+           'D': D_image,
            '.': blank}
     
 def processLines(lines, number):
