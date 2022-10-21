@@ -1,4 +1,4 @@
-'''
+"""
 Tetris piece is just a wrapper for an array. 
 No real logic required since the Board will handle that.
 
@@ -8,7 +8,7 @@ Our arrays will be from topLeft to bottom right indexing
 (1,0)(1,1) (1,2)
 (2,0)(2,1) (2,2)
 
-'''
+"""
 
 # We will define our offsets arrays globally
 # That way we can save heaps of memory when we construct thousands of temp pieces
@@ -47,29 +47,35 @@ S_OFFSETS = (S_NEUTRAL, S_VERT)
 J_OFFSETS = (J_NEUTRAL, J_REVERSE, J_LEFT, J_RIGHT)
 L_OFFSETS = (L_NEUTRAL, L_REVERSE, L_LEFT, L_RIGHT)
 
+
 def getBag():
     pieces = [OPiece(), IPiece(), TPiece(), SPiece(), ZPiece(), JPiece(), LPiece()]
     return pieces
 
+
 import random
+
 
 def getRandomBag():
     pieces = getBag()
     random.shuffle(pieces)
     return pieces
 
-typeStringToInt = {'.': 0,
-                   'L': 1, 
-                   'O': 2,
-                   'S': 3,
-                   'T': 4,
-                   'J': 5,
-                   'I': 6,
-                   'Z': 7,
-                   'X': 8
-                  }
-typeIntToString = {v:k for k,v in typeStringToInt.items()}
-    
+
+typeStringToInt = {
+    ".": 0,
+    "L": 1,
+    "O": 2,
+    "S": 3,
+    "T": 4,
+    "J": 5,
+    "I": 6,
+    "Z": 7,
+    "X": 8,
+}
+typeIntToString = {v: k for k, v in typeStringToInt.items()}
+
+
 class TetrisPiece(object):
     def __init__(self, offsets, typeString):
         self.offsets = offsets  # array of offset arrays, stored in (y,x) format
@@ -77,59 +83,77 @@ class TetrisPiece(object):
         self.typeInt = typeStringToInt[typeString]
         self.topLeftCorner = [0, 0]  # stored in y, x
         self.currentOrientation = None
-        
+
     def SetPosition(self, x, y):
         self.topLeftCorner = [y, x]
-        
+
     def SetCurrentOrientation(self, index):
         self.currentOrientation = self.offsets[index]
-        
+
     def copy(self):
-        result = TetrisPiece(self.offsets,self.typeString)
+        result = TetrisPiece(self.offsets, self.typeString)
         result.topLeftCorner = self.topLeftCorner
         result.currentOrientation = self.currentOrientation
         return result
-    
+
     def __str__(self):
-        return (self.typeString +":"+ 
-                str(self.topLeftCorner) + "/" +
-                str(self.currentOrientation))
-    
+        return (
+            self.typeString
+            + ":"
+            + str(self.topLeftCorner)
+            + "/"
+            + str(self.currentOrientation)
+        )
+
+
 class OPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(O_OFFSETS, 'O')
-        
+        super().__init__(O_OFFSETS, "O")
+
+
 class IPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(I_OFFSETS, 'I')
+        super().__init__(I_OFFSETS, "I")
+
+
 class TPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(T_OFFSETS, 'T')
+        super().__init__(T_OFFSETS, "T")
+
+
 class SPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(S_OFFSETS, 'S')
+        super().__init__(S_OFFSETS, "S")
+
+
 class ZPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(Z_OFFSETS, 'Z')
+        super().__init__(Z_OFFSETS, "Z")
+
+
 class JPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(J_OFFSETS, 'J')
+        super().__init__(J_OFFSETS, "J")
+
+
 class LPiece(TetrisPiece):
     def __init__(self):
-        super().__init__(L_OFFSETS, 'L')
-        
-def prettyPrintPiece(offsetArray, typeString):    
-    array = [[' ' for _ in range(4)] for _ in range(4)]    
+        super().__init__(L_OFFSETS, "L")
+
+
+def prettyPrintPiece(offsetArray, typeString):
+    array = [[" " for _ in range(4)] for _ in range(4)]
     for offset in offsetArray:
         (y, x) = offset
         array[y][x] = typeString
-    
+
     for row in array:
         print(row)
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     pieces = getBag()
     for piece in pieces:
         for offset in piece.offsets:
             prettyPrintPiece(offset, piece.typeString)
-            print ("\n") 
+            print("\n")
